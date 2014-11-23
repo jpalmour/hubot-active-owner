@@ -18,9 +18,19 @@ module.exports = (robot) ->
   robot.brain.data.teams ||= {}
   robot.brain.data.prsForReview ||= []
 
+  # TODO: move review-* events to their own modules
   robot.on 'review-needed', (pullRequest) ->
-    registerNewPrForReview(pullRequest)
+    pr = new PullRequest(pullRequest)
+    robot.brain.data.prsForReview["#{pr.repo}/#{pr.number}"] = pr
+    message = "Rapid Response needs a review of #{pr.url}"
+    messageAOs(message)
 
+  robot.on 'review-no-longer-needed', (pr) ->
+    delete robot.brain.data.prsForReview["#{pr.repo}/#{pr.number}"]
+    message = "Review no longer needed for #{pr.url}. The PR either was closed or review label was removed."
+    messageAOs(message)
+
+  # TODO: move webhook listener and  event emission logic to its own module
   robot.router.post 'hubot/gh-issues', (req, res) ->
     robot.logger.info "issue detected via GitHub webook: #{res}"
     if res.action == 'labeled' && res.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
@@ -28,38 +38,18 @@ module.exports = (robot) ->
       robot.emit 'review-needed',
         url: res.issue.url
         repo: res.repository.full_name
+        number: res.issue.number
     if reviewNoLongerNeeded res
       robot.logger.info "emitting review-no-longer-needed event: url: #{res.issue.url}"
       robot.emit 'review-no-longer-needed',
         url: res.issue.url
         repo: res.repository.full_name
+        number: res.issue.number
 
   reviewNoLongerNeeded = (gitHubIssuesResponse) ->
     labelRemoved = res.action == 'unlabeled' && res.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
     issueClosed = res.action == 'closed' && _.some(res.labels, (label) -> label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL)
     labelRemoved || issueClosed
-
-  # TODO this is dumb, use a repo that listens to GitHub webhooks instead
-  robot.hear /labeled .*pull request (\d+).*([a-zA-Z_.-]+)\/([a-zA-Z_.-])/, (msg) ->
-    robot.logger.info "pull request detected via robot.hear: #{msg.match[0]}"
-    prNumber = msg.match[1]
-    org = msg.match[2]
-    repo = msg.match[3]
-    github = new GitHubApi
-      version: '3.0.0'
-    github.authenticate
-      type: 'oauth'
-      token: process.env.HUBOT_GITHUB_TOKEN
-    github.issues.getIssueLabels {
-      user: org
-      repo: repo
-      number: prNumber
-    }, (err, res) ->
-      return robot.logger.err "Error calling GitHub api: #{err}"
-      if _.some(res, (label) -> label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL)
-        prUrl = "http://www.github.com/#{org}/#{repo}/pull/#{prNumber}"
-        robot.logger.info "emitting review-needed event: url: #{prUrl}"
-        robot.emit 'review-needed', url: prUrl
 
   robot.respond /(list|show) (active owners|AO's|AOs)/i, (msg) ->
     teams = robot.brain.data['teams']
@@ -115,20 +105,20 @@ module.exports = (robot) ->
   addTeam = (name) ->
     robot.brain.data.teams[name.toLowerCase()] = new Team(name)
   
-  registerNewPrForReview = (pullRequest) ->
-    #TODO: keep track of PRs in need of review and enable list to be viewed
-    #pullRequest = new PullRequest(pullRequest)
-    #robot.brain.data.prsForReview.push(pullRequest)
-    messageAOs(pullRequest)
-    
-  messageAOs = (pullRequest) ->
-    messageAO(team, pullRequest) for teamName, team of robot.brain.data.teams 
+  messageAOs = (message) ->
+    messageAO(team, message) for teamName, team of robot.brain.data.teams
 
-  messageAO = (team, pullRequest) ->
-    if team.aoUserId 
+  messageAO = (team, message) ->
+    if team.aoUserId
       aoUser = robot.brain.userForId(team.aoUserId)
-      message = "Rapid Response needs a review of #{pullRequest.url}"
       robot.send(aoUser, message)
+
+class PullRequest
+  constructor: (pr) ->
+    @repo = pr.repo
+    @url = pr.url
+    @number = pr.number
+    @reviewNeededDt = new Date()
     
 class Team
   constructor: (name) ->
