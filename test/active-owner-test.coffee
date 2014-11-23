@@ -19,6 +19,7 @@ describe 'active-owner script', ->
       hear: sinon.spy()
       brain: data: {}
       on: sinon.spy()
+      router: post: sinon.spy()
     require('../src/active-owner')(@robot)
 
   it 'registers respond listeners', ->
@@ -45,11 +46,11 @@ describe 'Hubot with active-owner script', ->
       adapter = robot.adapter
       waitForHelp = ->
         if robot.helpCommands().length > 0
-          do done
+          done()
         else
           setTimeout waitForHelp, 100
-      do waitForHelp
-    do robot.run
+      waitForHelp()
+    robot.run()
 
   afterEach ->
     robot.server.close()
@@ -64,13 +65,13 @@ describe 'Hubot with active-owner script', ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.equal('Team America added.')
         expect(robot.brain.data.teams['team america']?).to.be.true
-        do done
+        done()
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'
 
     it 'should not add a duplicate team', (done) ->
       adapter.on 'send', (envelope, strings) ->
         if strings[0] == 'Team America already being tracked.'
-          do done
+          done()
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'
 
@@ -78,7 +79,7 @@ describe 'Hubot with active-owner script', ->
       adapter.on 'send', (envelope, strings) ->
         if strings[0] == 'Removed Team America from tracked teams.'
           expect(robot.brain.data.teams['team america']?).to.be.false
-          do done
+          done()
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'
       adapter.receive new TextMessage user, 'TestHubot delete Team America from teams'
 
@@ -91,7 +92,7 @@ describe 'Hubot with active-owner script', ->
         expect(strings[0]).to.equal('Got it.')
         aoId = robot.brain.data.teams['team america'].aoUserId
         expect(robot.brain.userForId(aoId).name).to.equal('Gary')
-        do done
+        done()
       adapter.receive new TextMessage user, 'TestHubot assign Gary as AO for Team America'
     
     it 'should assign sender of message to a team', (done) ->
@@ -99,19 +100,19 @@ describe 'Hubot with active-owner script', ->
         expect(strings[0]).to.equal('Got it.')
         aoId = robot.brain.data.teams['team america'].aoUserId
         expect(robot.brain.userForId(aoId).name).to.equal('Gary')
-        do done
+        done()
       adapter.receive new TextMessage user, "TestHubot I'm AO for Team America"
 
     it 'should not assign an unknown person to a team', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.equal("I have no idea who you're talking about.")
-        do done
+        done()
       adapter.receive new TextMessage user, "TestHubot assign Kim Jong as AO for Team America"
 
     it 'should not assign a person to an unknown team', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.equal("Never heard of that team. You can add a team with 'Add <team name> to teams'.")
-        do done
+        done()
       adapter.receive new TextMessage user, "TestHubot assign Gary as AO for the Braves"
 
   describe 'show AOs', ->
@@ -120,7 +121,7 @@ describe 'Hubot with active-owner script', ->
         expResp = "Sorry, I'm not keeping track of any teams or their AOs.\n" +
           "Get started with 'Add <team name> to teams'."
         expect(strings[0]).to.equal(expResp)
-        do done
+        done()
       adapter.receive new TextMessage user, 'TestHubot show AOs'
     
     it 'should list all AOs', (done) ->
@@ -137,7 +138,7 @@ describe 'Hubot with active-owner script', ->
 	* Team Knight Rider has no active owner! Use: \'Assign <user> as AO for <team>\'.
         """
         expect(strings[0]).to.equal(expResp)
-        do done
+        done()
       adapter.receive new TextMessage user, 'TestHubot show AOs'
 
   describe 'on review-needed events', ->
@@ -151,7 +152,7 @@ describe 'Hubot with active-owner script', ->
     it 'should message AOs with PR link', (done) ->
       verifyAlertedUsers = ->
         if alertedUsers.indexOf('1') >= 0 && alertedUsers.indexOf('2') >= 0
-          do done
+          done()
       finished = _.after 2, verifyAlertedUsers
       alertedUsers = []
 

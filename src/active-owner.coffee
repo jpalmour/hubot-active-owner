@@ -21,8 +21,27 @@ module.exports = (robot) ->
   robot.on 'review-needed', (pullRequest) ->
     registerNewPrForReview(pullRequest)
 
+  robot.router.post 'hubot/gh-issues', (req, res) ->
+    robot.logger.info "issue detected via GitHub webook: #{res}"
+    if res.action == 'labeled' && res.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
+      robot.logger.info "emitting review-needed event: url: #{res.issue.url}"
+      robot.emit 'review-needed',
+        url: res.issue.url
+        repo: res.repository.full_name
+    if reviewNoLongerNeeded res
+      robot.logger.info "emitting review-no-longer-needed event: url: #{res.issue.url}"
+      robot.emit 'review-no-longer-needed',
+        url: res.issue.url
+        repo: res.repository.full_name
+
+  reviewNoLongerNeeded = (gitHubIssuesResponse) ->
+    labelRemoved = res.action == 'unlabeled' && res.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
+    issueClosed = res.action == 'closed' && _.some(res.labels, (label) -> label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL)
+    labelRemoved || issueClosed
+
   # TODO this is dumb, use a repo that listens to GitHub webhooks instead
   robot.hear /labeled .*pull request (\d+).*([a-zA-Z_.-]+)\/([a-zA-Z_.-])/, (msg) ->
+    robot.logger.info "pull request detected via robot.hear: #{msg.match[0]}"
     prNumber = msg.match[1]
     org = msg.match[2]
     repo = msg.match[3]
@@ -36,10 +55,11 @@ module.exports = (robot) ->
       repo: repo
       number: prNumber
     }, (err, res) ->
-      return if err
+      return robot.logger.err "Error calling GitHub api: #{err}"
       if _.some(res, (label) -> label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL)
-        robot.emit 'review-needed',
-          url: "http://www.github.com/#{org}/#{repo}/pull/#{prNumber}"
+        prUrl = "http://www.github.com/#{org}/#{repo}/pull/#{prNumber}"
+        robot.logger.info "emitting review-needed event: url: #{prUrl}"
+        robot.emit 'review-needed', url: prUrl
 
   robot.respond /(list|show) (active owners|AO's|AOs)/i, (msg) ->
     teams = robot.brain.data['teams']
