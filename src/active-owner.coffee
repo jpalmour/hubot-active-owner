@@ -15,8 +15,9 @@ GitHubApi = require 'github'
 
 module.exports = (robot) ->
 
-  robot.brain.data.teams ||= {}
-  robot.brain.data.prsForReview ||= []
+  robot.brain.on 'loaded', ->
+    robot.brain.data.teams ||= {}
+    robot.brain.data.prsForReview ||= []
 
   # TODO: move review-* events to their own modules
   robot.on 'review-needed', (pullRequest) ->
@@ -31,25 +32,29 @@ module.exports = (robot) ->
     messageAOs(message)
 
   # TODO: move webhook listener and  event emission logic to its own module
-  robot.router.post 'hubot/gh-issues', (req, res) ->
-    robot.logger.info "issue detected via GitHub webook: #{res}"
-    if res.action == 'labeled' && res.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
-      robot.logger.info "emitting review-needed event: url: #{res.issue.url}"
+  robot.router.post '/hubot/gh', (req, res) ->
+    robot.logger.debug 'hubot/gh webhook request received'
+    res.send 200
+    return if req.body.zen
+    robot.logger.debug "issue detected via GitHub webook: #{JSON.stringify req.body}"
+    if req.body.action == 'labeled' && req.body.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
+      robot.logger.info "emitting review-needed event: url: #{req.body.pull_request.html_url}"
       robot.emit 'review-needed',
-        url: res.issue.url
-        repo: res.repository.full_name
-        number: res.issue.number
-    if reviewNoLongerNeeded res
-      robot.logger.info "emitting review-no-longer-needed event: url: #{res.issue.url}"
+        url: req.body.pull_request.html_url
+        repo: req.body.repository.full_name
+        number: req.body.number
+    if reviewNoLongerNeeded req.body
+      robot.logger.info "emitting review-no-longer-needed event: url: #{req.body.pull_request.html_url}"
       robot.emit 'review-no-longer-needed',
-        url: res.issue.url
-        repo: res.repository.full_name
-        number: res.issue.number
+        url: req.body.pull_request.html_url
+        repo: req.body.repository.full_name
+        number: req.body.pull_request.number
 
-  reviewNoLongerNeeded = (gitHubIssuesResponse) ->
-    labelRemoved = res.action == 'unlabeled' && res.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
-    issueClosed = res.action == 'closed' && _.some(res.labels, (label) -> label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL)
-    labelRemoved || issueClosed
+  reviewNoLongerNeeded = (body) ->
+    labelRemoved = body.action == 'unlabeled' && body.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
+    #TODO: don't have label in body, must see if name exists in needs review list instead
+    prClosed = false#body.action == 'closed' && _.some(body.labels, (label) -> label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL)
+    labelRemoved || prClosed
 
   robot.respond /(list|show) (active owners|AO's|AOs)/i, (msg) ->
     teams = robot.brain.data['teams']

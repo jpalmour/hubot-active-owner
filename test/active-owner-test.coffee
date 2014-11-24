@@ -17,7 +17,9 @@ describe 'active-owner script', ->
     @robot =
       respond: sinon.spy()
       hear: sinon.spy()
-      brain: data: {}
+      brain:
+        data: {}
+        on: sinon.spy()
       on: sinon.spy()
       router: post: sinon.spy()
     require('../src/active-owner')(@robot)
@@ -46,6 +48,7 @@ describe 'Hubot with active-owner script', ->
       adapter = robot.adapter
       waitForHelp = ->
         if robot.helpCommands().length > 0
+          robot.brain.set 'forceBrainLoadedEvent', 'thisIsDumb'
           done()
         else
           setTimeout waitForHelp, 100
