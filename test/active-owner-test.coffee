@@ -36,6 +36,9 @@ describe 'Hubot with active-owner script', ->
     robot = new Robot null, 'mock-adapter', true, 'TestHubot'
     robot.adapter.on 'connected', ->
       robot.loadFile path.resolve('.', 'src'), 'active-owner.coffee'
+      robot.loadFile path.resolve('.', 'src'), 'review-needed-handler.coffee'
+      robot.loadFile path.resolve('.', 'src'), 'review-complete-handler.coffee'
+      robot.loadFile path.resolve('.', 'src'), 'webhook-listener.coffee'
       robot.loadFile path.resolve('.', 'node_modules', 'hubot-help', 'src'), 'help.coffee'
       user = robot.brain.userForId '1', {
         name: '@Gary'
@@ -208,7 +211,7 @@ describe 'Hubot with active-owner script', ->
         repo: 'a/b'
         number: 1
 
-  describe 'on review-no-longer-needed events', ->
+  describe 'on review-complete events', ->
     beforeEach ->
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'
       adapter.receive new TextMessage user, 'TestHubot add The Mighty Ducks to teams'
@@ -229,7 +232,7 @@ describe 'Hubot with active-owner script', ->
         expect(strings[0]).to.equal("Review no longer needed for http://www.github.com/a/b/pull/1. The PR either was closed or review label was removed.")
         alertedUsers.push(envelope.id)
         finished()
-      robot.emit 'review-no-longer-needed',
+      robot.emit 'review-complete',
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1
@@ -238,7 +241,7 @@ describe 'Hubot with active-owner script', ->
       adapter.on 'send', (envelope, strings) ->
         expect(robot.brain.data.prsForReview).not.to.contain.keys('a/b/1')
         done()
-      robot.emit 'review-no-longer-needed',
+      robot.emit 'review-complete',
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1

@@ -1,7 +1,7 @@
 {
   "name": "hubot-active-owner",
   "description": "Let Hubot keep track of who is on AO duty for each team",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Joseph Palmour <jpalmour@gmail.com>",
   "contributors": [{
     "name": "Candice McCollough",
@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "coffee-script": "~1.6",
-    "github": "^0.2.3",
     "moment": "^2.8.4"
   },
   "devDependencies": {
