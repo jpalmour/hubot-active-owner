@@ -2,8 +2,8 @@
 #   Let Hubot keep track of who is on AO duty for each team
 #
 # Configuration:
-#  HUBOT_GITHUB_TOKEN (for notifying AOs of PRs with rr-needs-review in private repos) 
 #  HUBOT_REVIEW_NEEDED_LABEL (Hubot messages all AOs when PR gets this label) 
+#  add GitHub webhook with issues events pointing to <hubot server>:8080/hubot/gh-issues
 #
 # Commands:
 #   hubot show|list AOs - displays the current active owner for each team
@@ -90,7 +90,7 @@ module.exports = (robot) ->
       return msg.send "Removed #{teamName} from tracked teams."
     msg.send "I wasn't tracking #{teamName}."
 
-  robot.respond /assign ([a-z0-9 -]+) as AO for ([a-z0-9 ]+)/i, (msg) ->
+  robot.respond /assign ([a-z0-9 -@]+) as AO for ([a-z0-9 ]+)/i, (msg) ->
     userId = robot.brain.userForName(msg.match[1])?.id
     teamName = msg.match[2]
     assignTeam userId, teamName, msg

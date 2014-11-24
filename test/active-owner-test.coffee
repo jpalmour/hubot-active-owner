@@ -36,7 +36,7 @@ describe 'Hubot with active-owner script', ->
       robot.loadFile path.resolve('.', 'src'), 'active-owner.coffee'
       robot.loadFile path.resolve('.', 'node_modules', 'hubot-help', 'src'), 'help.coffee'
       user = robot.brain.userForId '1', {
-        name: 'Gary'
+        name: '@Gary'
         room: '1'
       }
       robot.brain.userForId '2', {
@@ -91,15 +91,15 @@ describe 'Hubot with active-owner script', ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.equal('Got it.')
         aoId = robot.brain.data.teams['team america'].aoUserId
-        expect(robot.brain.userForId(aoId).name).to.equal('Gary')
+        expect(robot.brain.userForId(aoId).name).to.equal('@Gary')
         done()
-      adapter.receive new TextMessage user, 'TestHubot assign Gary as AO for Team America'
+      adapter.receive new TextMessage user, 'TestHubot assign @Gary as AO for Team America'
     
     it 'should assign sender of message to a team', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.equal('Got it.')
         aoId = robot.brain.data.teams['team america'].aoUserId
-        expect(robot.brain.userForId(aoId).name).to.equal('Gary')
+        expect(robot.brain.userForId(aoId).name).to.equal('@Gary')
         done()
       adapter.receive new TextMessage user, "TestHubot I'm AO for Team America"
 
@@ -113,7 +113,7 @@ describe 'Hubot with active-owner script', ->
       adapter.on 'send', (envelope, strings) ->
         expect(strings[0]).to.equal("Never heard of that team. You can add a team with 'Add <team name> to teams'.")
         done()
-      adapter.receive new TextMessage user, "TestHubot assign Gary as AO for the Braves"
+      adapter.receive new TextMessage user, "TestHubot assign @Gary as AO for the Braves"
 
   describe 'show AOs', ->
     it 'should know when none exist', (done) ->
@@ -133,7 +133,7 @@ describe 'Hubot with active-owner script', ->
       adapter.on 'send', (envelope, strings) ->
         expResp = """
 	AOs:
-	Gary has been active owner on Team America for a few seconds
+	@Gary has been active owner on Team America for a few seconds
 	Charlie has been active owner on The Mighty Ducks for a few seconds
 	* Team Knight Rider has no active owner! Use: \'Assign <user> as AO for <team>\'.
         """
