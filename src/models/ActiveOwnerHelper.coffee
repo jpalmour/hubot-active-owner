@@ -27,4 +27,17 @@ class ActiveOwnerHelper
       aoUser = @robot.brain.userForId(team.aoUserId)
       @robot.send(aoUser, message)
 
+  getIdForName: (name) ->
+    return @robot.brain.userForName(name)?.id || @userForHipchatMentionName(name)?.id
+    return id
+
+  userForHipchatMentionName: (name) ->
+    result = null
+    lowerName = name.toLowerCase()
+    for k of (@robot.brain.data.users or { })
+      userName = @robot.brain.data.users[k]['mention_name']
+      if userName? and userName.toString().toLowerCase() is lowerName
+        result = @robot.brain.data.users[k]
+    result
+
 module.exports = ActiveOwnerHelper

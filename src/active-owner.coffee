@@ -59,7 +59,7 @@ module.exports = (robot) ->
     msg.send "I wasn't tracking #{teamName}."
 
   robot.respond /assign ([a-z0-9 -@]+) as AO for ([a-z0-9 ]+)/i, (msg) ->
-    userId = robot.brain.userForName(msg.match[1])?.id
+    userId = helper.getIdForName msg.match[1]
     teamName = msg.match[2]
     helper.assignTeam userId, teamName, msg
   
