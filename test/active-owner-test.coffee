@@ -141,6 +141,34 @@ describe 'Hubot with active-owner script', ->
         done()
       adapter.receive new TextMessage user, 'TestHubot show AOs'
 
+  describe 'show needed reviews', ->
+    it 'should show needed reviews', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expResp = """
+        PRs in need of review:
+        Added a few seconds ago: http://www.github.com/a/b/pull/1
+        Added a few seconds ago: http://www.github.com/a/b/pull/2
+        """
+        expect(strings[0]).to.equal(expResp)
+        done()
+      robot.emit 'review-needed',
+        url: 'http://www.github.com/a/b/pull/1'
+        repo: 'a/b'
+        number: 1
+      robot.emit 'review-needed',
+        url: 'http://www.github.com/a/b/pull/2'
+        repo: 'a/b'
+        number: 2
+      adapter.receive new TextMessage user, 'TestHubot show needed reviews'
+    it 'knows when no reviews are needed', (done) ->
+      adapter.on 'send', (envelope, strings) ->
+        expResp = """
+        Nothing needs review as far as I know.
+        """
+        expect(strings[0]).to.equal(expResp)
+        done()
+      adapter.receive new TextMessage user, 'TestHubot show needed reviews'
+
   describe 'on review-needed events', ->
     it 'should message AOs with PR link', (done) ->
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'

@@ -66,6 +66,16 @@ module.exports = (robot) ->
     aoStatusList = (aoStatus(team) for teamName, team of teams)
     msg.send "AOs:\n" + aoStatusList.join("\n")
 
+  robot.respond /(list|show) needed reviews/i, (msg) ->
+    prs = robot.brain.data['prsForReview']
+    if Object.keys(prs).length == 0
+      response = "Nothing needs review as far as I know."
+      return msg.send response
+    prDescription = (pr) ->
+      return "Added #{moment(pr.aoUserAssignedDt).fromNow()}: #{pr.url}"
+    prDescriptionList = (prDescription(pr) for prKey, pr of prs)
+    msg.send "PRs in need of review:\n" + prDescriptionList.join("\n")
+
   robot.respond /add ([a-z0-9 ]+) to teams/i, (msg) ->
     teamName = msg.match[1]
     if getTeam(teamName)
