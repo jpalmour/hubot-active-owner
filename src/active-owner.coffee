@@ -1,6 +1,7 @@
 # Description
 #   Let Hubot keep track of who is on AO duty for each team
 #
+#
 # Configuration:
 #  HUBOT_REVIEW_NEEDED_LABEL (Hubot messages all AOs when PR gets this label)
 #  add GitHub webhook with only pull_request events pointing to <hubot server>:8080/hubot/gh
