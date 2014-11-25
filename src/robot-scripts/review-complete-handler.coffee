@@ -1,6 +1,6 @@
 # Description
 #   Message AOs and remove PRs from review list on review-complete events
-AOHelper = require './models/ActiveOwnerHelper'
+AOHelper = require '../ActiveOwnerHelper'
 
 module.exports = (robot) ->
 

@@ -35,7 +35,8 @@ class ActiveOwnerHelper
   messageAO: (team, message) ->
     if team.aoUserId
       aoUser = @robot.brain.userForId(team.aoUserId)
-      @robot.send(aoUser, message)
+      @robot.logger.info "Messaging user #{team.aoUserId}: #{JSON.stringify aoUser}"
+      @robot.reply(aoUser, message)
 
   getIdForName: (name) ->
     return @robot.brain.userForName(name)?.id || @userForHipchatMentionName(name)?.id

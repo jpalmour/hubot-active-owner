@@ -22,7 +22,7 @@ describe 'active-owner script', ->
         on: sinon.spy()
       on: sinon.spy()
       router: post: sinon.spy()
-    require('../src/active-owner')(@robot)
+    require('../src/robot-scripts/active-owner')(@robot)
 
   it 'registers respond listeners', ->
     expect(@robot.respond).to.have.been.calledWith(/(list|show) (active owners|AO's|AOs)/i)
@@ -35,10 +35,9 @@ describe 'Hubot with active-owner script', ->
   beforeEach (done) ->
     robot = new Robot null, 'mock-adapter', true, 'TestHubot'
     robot.adapter.on 'connected', ->
-      robot.loadFile path.resolve('.', 'src'), 'active-owner.coffee'
-      robot.loadFile path.resolve('.', 'src'), 'review-needed-handler.coffee'
-      robot.loadFile path.resolve('.', 'src'), 'review-complete-handler.coffee'
-      robot.loadFile path.resolve('.', 'src'), 'webhook-listener.coffee'
+      robot.loadFile path.resolve('.', 'src', 'robot-scripts'), 'active-owner.coffee'
+      robot.loadFile path.resolve('.', 'src', 'robot-scripts'), 'review-needed-handler.coffee'
+      robot.loadFile path.resolve('.', 'src', 'robot-scripts'), 'review-complete-handler.coffee'
       robot.loadFile path.resolve('.', 'node_modules', 'hubot-help', 'src'), 'help.coffee'
       user = robot.brain.userForId '1', {
         name: '@Gary'
@@ -200,7 +199,7 @@ describe 'Hubot with active-owner script', ->
       finished = _.after 2, verifyAlertedUsers
       alertedUsers = []
 
-      adapter.on 'send', (envelope, strings) ->
+      adapter.on 'reply', (envelope, strings) ->
         expect(strings[0]).to.equal("Rapid Response needs a review of http://www.github.com/a/b/pull/1")
         alertedUsers.push(envelope.id)
         finished()
@@ -213,7 +212,7 @@ describe 'Hubot with active-owner script', ->
     it 'should persist the PR needing review', (done) ->
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'
       adapter.receive new TextMessage user, "TestHubot I'm AO for Team America"
-      adapter.on 'send', (envelope, strings) ->
+      adapter.on 'reply', (envelope, strings) ->
         expect(robot.brain.data.reviews).to.contain.keys('a/b/1')
         expect(robot.brain.data.reviews['a/b/1'].url).to.equal('http://www.github.com/a/b/pull/1')
         expect(robot.brain.data.reviews['a/b/1'].repo).to.equal('a/b')
@@ -243,7 +242,7 @@ describe 'Hubot with active-owner script', ->
           done()
       finished = _.after 2, verifyAlertedUsers
       alertedUsers = []
-      adapter.on 'send', (envelope, strings) ->
+      adapter.on 'reply', (envelope, strings) ->
         expect(strings[0]).to.equal("Review no longer needed for http://www.github.com/a/b/pull/1. The PR either was closed or review label was removed.")
         alertedUsers.push(envelope.id)
         finished()
@@ -254,7 +253,7 @@ describe 'Hubot with active-owner script', ->
         key: 'a/b/1'
 
     it 'should remove the PR that is no longer in need of review', (done) ->
-      adapter.on 'send', (envelope, strings) ->
+      adapter.on 'reply', (envelope, strings) ->
         expect(robot.brain.data.reviews).not.to.contain.keys('a/b/1')
         done()
       robot.emit 'review-complete',

@@ -12,7 +12,7 @@
 #   hubot I'm AO for [team]- assign yourself as AO for a team
 moment = require 'moment'
 _ = require 'lodash'
-AOHelper = require('./models/ActiveOwnerHelper')
+AOHelper = require('../ActiveOwnerHelper')
 
 module.exports = (robot) ->
 

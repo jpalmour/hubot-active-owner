@@ -1,6 +1,6 @@
 # Description
 #   Message AOs and persist review info on review-needed events
-AOHelper = require './models/ActiveOwnerHelper'
+AOHelper = require '../ActiveOwnerHelper'
 
 module.exports = (robot) ->
 
