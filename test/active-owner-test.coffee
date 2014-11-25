@@ -61,8 +61,8 @@ describe 'Hubot with active-owner script', ->
     robot.shutdown
 
   describe 'help', ->
-    it 'should have 5 options', ->
-      expect(robot.helpCommands()).to.have.length 5
+    it 'should have 6 options', ->
+      expect(robot.helpCommands()).to.have.length 6
 
   describe 'teams', ->
     it 'should add a new team', (done) ->

@@ -7,7 +7,8 @@
 #  add GitHub webhook with only pull_request events pointing to <hubot server>:8080/hubot/gh
 #
 # Commands:
-#   hubot show|list AOs - displays the current active owner for each team
+#   hubot show AOs - displays the current active owner for each team
+#   hubot show review list - displays the list of PRs currently needing reveiw
 #   hubot assign [user] as AO for [team] - assign a user as AO for a team
 #   hubot I'm AO for [team]- assign yourself as AO for a team
 moment = require 'moment'

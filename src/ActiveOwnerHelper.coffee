@@ -1,5 +1,6 @@
 Team = require './Team'
 Review = require './Review'
+_ = require 'lodash'
 
 class ActiveOwnerHelper
   constructor: (@robot) ->
@@ -35,8 +36,12 @@ class ActiveOwnerHelper
   messageAO: (team, message) ->
     if team.aoUserId
       aoUser = @robot.brain.userForId(team.aoUserId)
+      # Hipchat adapter sets the current room to the user's reply_to property value
+      # To send a private message instead, don't transfer reply_to
+      user = _.clone(aoUser)
+      delete user['reply_to']
       @robot.logger.info "Messaging user #{team.aoUserId}: #{JSON.stringify aoUser}"
-      @robot.reply(aoUser, message)
+      @robot.reply(user, message)
 
   getIdForName: (name) ->
     return @robot.brain.userForName(name)?.id || @userForHipchatMentionName(name)?.id
