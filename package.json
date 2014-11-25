@@ -1,12 +1,14 @@
 {
   "name": "hubot-active-owner",
   "description": "Let Hubot keep track of who is on AO duty for each team",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": "Joseph Palmour <jpalmour@gmail.com>",
-  "contributors": [{
-    "name": "Candice McCollough",
-    "email": "candice.mccollough@careerbuilder.com"
-  }],
+  "contributors": [
+    {
+      "name": "Candice McCollough",
+      "email": "candice.mccollough@careerbuilder.com"
+    }
+  ],
   "license": "MIT",
   "keywords": [
     "hubot",
@@ -35,7 +37,8 @@
     "matchdep": "~0.1.2",
     "mocha": "*",
     "sinon": "*",
-    "sinon-chai": "*"
+    "sinon-chai": "*",
+    "supertest": "^0.15.0"
   },
   "main": "index.coffee",
   "scripts": {

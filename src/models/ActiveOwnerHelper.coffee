@@ -1,4 +1,5 @@
 Team = require './Team'
+Review = require './Review'
 
 class ActiveOwnerHelper
   constructor: (@robot) ->
@@ -18,6 +19,15 @@ class ActiveOwnerHelper
 
   addTeam: (name) ->
     @robot.brain.data.teams[name.toLowerCase()] = new Team(name)
+
+  getReview: (reviewKey) ->
+    return @robot.brain.data.reviews[reviewKey]
+
+  removeReview: (reviewKey) ->
+    delete @robot.brain.data.reviews[reviewKey]
+
+  addReview: (review) ->
+    @robot.brain.data.reviews[review.key] = review
 
   messageAOs: (message) ->
     @messageAO(team, message) for teamName, team of @robot.brain.data.teams

@@ -51,7 +51,6 @@ describe 'Hubot with active-owner script', ->
       adapter = robot.adapter
       waitForHelp = ->
         if robot.helpCommands().length > 0
-          robot.brain.set 'forceBrainLoadedEvent', 'thisIsDumb'
           done()
         else
           setTimeout waitForHelp, 100
@@ -147,7 +146,7 @@ describe 'Hubot with active-owner script', ->
         done()
       adapter.receive new TextMessage user, 'TestHubot show AOs'
 
-  describe 'show needed reviews', ->
+  describe 'PR reviews', ->
     it 'should show needed reviews', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expResp = """
@@ -161,11 +160,13 @@ describe 'Hubot with active-owner script', ->
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1
+        key: 'a/b/1'
       robot.emit 'review-needed',
         url: 'http://www.github.com/a/b/pull/2'
         repo: 'a/b'
         number: 2
-      adapter.receive new TextMessage user, 'TestHubot show needed reviews'
+        key: 'a/b/2'
+      adapter.receive new TextMessage user, 'TestHubot show review list'
     it 'knows when no reviews are needed', (done) ->
       adapter.on 'send', (envelope, strings) ->
         expResp = """
@@ -173,7 +174,18 @@ describe 'Hubot with active-owner script', ->
         """
         expect(strings[0]).to.equal(expResp)
         done()
-      adapter.receive new TextMessage user, 'TestHubot show needed reviews'
+      adapter.receive new TextMessage user, 'TestHubot show review list'
+    it 'should allow deleting review by key', (done) ->
+      robot.emit 'review-needed',
+        url: 'http://www.github.com/a/b/pull/1'
+        repo: 'a/b'
+        number: 1
+        key: 'a/b/1'
+      adapter.on 'send', (envelope, strings) ->
+        expect(strings[0]).to.equal('Removed a/b/1 from review list.')
+        expect(robot.brain.data.reviews['a/b/1']?).to.be.false
+        done()
+      adapter.receive new TextMessage user, 'TestHubot remove review a/b/1 from review list'
 
   describe 'on review-needed events', ->
     it 'should message AOs with PR link', (done) ->
@@ -196,20 +208,22 @@ describe 'Hubot with active-owner script', ->
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1
+        key: 'a/b/1'
 
     it 'should persist the PR needing review', (done) ->
       adapter.receive new TextMessage user, 'TestHubot add Team America to teams'
       adapter.receive new TextMessage user, "TestHubot I'm AO for Team America"
       adapter.on 'send', (envelope, strings) ->
-        expect(robot.brain.data.prsForReview).to.contain.keys('a/b/1')
-        expect(robot.brain.data.prsForReview['a/b/1'].url).to.equal('http://www.github.com/a/b/pull/1')
-        expect(robot.brain.data.prsForReview['a/b/1'].repo).to.equal('a/b')
-        expect(robot.brain.data.prsForReview['a/b/1'].number).to.equal(1)
+        expect(robot.brain.data.reviews).to.contain.keys('a/b/1')
+        expect(robot.brain.data.reviews['a/b/1'].url).to.equal('http://www.github.com/a/b/pull/1')
+        expect(robot.brain.data.reviews['a/b/1'].repo).to.equal('a/b')
+        expect(robot.brain.data.reviews['a/b/1'].number).to.equal(1)
         done()
       robot.emit 'review-needed',
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1
+        key: 'a/b/1'
 
   describe 'on review-complete events', ->
     beforeEach ->
@@ -220,6 +234,7 @@ describe 'Hubot with active-owner script', ->
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1
+        key: 'a/b/1'
 
     it 'should message AOs that review is no longer needed, with PR link', (done) ->
       adapter.receive new TextMessage user, "TestHubot assign Charlie as AO for The Mighty Ducks"
@@ -236,12 +251,14 @@ describe 'Hubot with active-owner script', ->
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1
+        key: 'a/b/1'
 
     it 'should remove the PR that is no longer in need of review', (done) ->
       adapter.on 'send', (envelope, strings) ->
-        expect(robot.brain.data.prsForReview).not.to.contain.keys('a/b/1')
+        expect(robot.brain.data.reviews).not.to.contain.keys('a/b/1')
         done()
       robot.emit 'review-complete',
         url: 'http://www.github.com/a/b/pull/1'
         repo: 'a/b'
         number: 1
+        key: 'a/b/1'

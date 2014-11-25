@@ -1,31 +1,24 @@
 # Description
 #   Emit review-needed and review-complete events based on GitHub pull_request WebHook Events
+
+AOHelper = require './models/ActiveOwnerHelper'
+Review = require './models/Review'
+
 module.exports = (robot) ->
 
-  # TODO: move webhook listener and  event emission logic to its own module
+  helper = new AOHelper robot
+
   robot.router.post '/hubot/gh', (req, res) ->
     robot.logger.debug 'hubot/gh webhook request received'
     res.send 200
-    return if req.body.zen
+    return if ! req.body.pull_request
+    review = new Review(req.body)
     if req.body.action == 'labeled' && req.body.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
-      robot.logger.info "emitting review-needed event: url: #{req.body.pull_request.html_url}"
-      robot.emit 'review-needed',
-        url: req.body.pull_request.html_url
-        repo: req.body.repository.full_name
-        number: req.body.number
+      robot.emit 'review-needed', review
     if reviewNoLongerNeeded req.body
-      robot.logger.info "emitting review-complete event: url: #{req.body.pull_request.html_url}"
-      robot.emit 'review-complete',
-        url: req.body.pull_request.html_url
-        repo: req.body.repository.full_name
-        number: req.pull_request.number
+      robot.emit 'review-complete', review
 
   reviewNoLongerNeeded = (body) ->
     labelRemoved = body.action == 'unlabeled' && body.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
-    #TODO: don't have label in body, must see if name exists in needs review list instead
-    prClosed = body.action == 'closed' && prNeedsReview "#{body.repository.full_name}/#{body.number}"
+    prClosed = body.action == 'closed' && helper.getReview "#{body.repository.full_name}/#{body.number}"
     labelRemoved || prClosed
-
-  prNeedsReview = (prKey) ->
-    robot.brain.data.prsForReview[prKey]
-

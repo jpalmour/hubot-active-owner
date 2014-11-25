@@ -16,11 +16,11 @@ AOHelper = require('./models/ActiveOwnerHelper')
 module.exports = (robot) ->
 
   robot.brain.data.teams ||= {}
-  robot.brain.data.prsForReview ||= []
+  robot.brain.data.reviews ||= {}
   helper = new AOHelper(robot)
 
   robot.respond /(list|show) (active owners|AO's|AOs)/i, (msg) ->
-    teams = robot.brain.data['teams']
+    teams = robot.brain.data.teams
     if Object.keys(teams).length == 0
       response = "Sorry, I'm not keeping track of any teams or their AOs.\n" +
       "Get started with 'Add <team name> to teams'."
@@ -34,14 +34,14 @@ module.exports = (robot) ->
     aoStatusList = (aoStatus(team) for teamName, team of teams)
     msg.send "AOs:\n" + aoStatusList.join("\n")
 
-  robot.respond /(list|show) needed reviews/i, (msg) ->
-    prs = robot.brain.data['prsForReview']
-    if Object.keys(prs).length == 0
+  robot.respond /(list|show) review list/i, (msg) ->
+    reviews = robot.brain.data.reviews
+    if Object.keys(reviews).length == 0
       response = "Nothing needs review as far as I know."
       return msg.send response
     prDescription = (pr) ->
       return "Added #{moment(pr.aoUserAssignedDt).fromNow()}: #{pr.url}"
-    prDescriptionList = (prDescription(pr) for prKey, pr of prs)
+    prDescriptionList = (prDescription(pr) for prKey, pr of reviews)
     msg.send "PRs in need of review:\n" + prDescriptionList.join("\n")
 
   robot.respond /add ([a-z0-9 ]+) to teams/i, (msg) ->
@@ -57,6 +57,13 @@ module.exports = (robot) ->
       helper.removeTeam(teamName)
       return msg.send "Removed #{teamName} from tracked teams."
     msg.send "I wasn't tracking #{teamName}."
+
+  robot.respond /(delete|remove) review ([a-z0-9/]+) from review list/i, (msg) ->
+    reviewKey = msg.match[2]
+    if helper.getReview(reviewKey)
+      helper.removeReview(reviewKey)
+      return msg.send "Removed #{reviewKey} from review list."
+    msg.send "I wasn't tracking #{reviewKey}."
 
   robot.respond /assign ([a-z0-9 -@]+) as AO for ([a-z0-9 ]+)/i, (msg) ->
     userId = helper.getIdForName msg.match[1]

@@ -6,7 +6,7 @@ module.exports = (robot) ->
 
   helper = new AOHelper robot
 
-  robot.on 'review-complete', (pr) ->
-    delete robot.brain.data.prsForReview["#{pr.repo}/#{pr.number}"]
-    message = "Review no longer needed for #{pr.url}. The PR either was closed or review label was removed."
+  robot.on 'review-complete', (review) ->
+    helper.removeReview(review.key)
+    message = "Review no longer needed for #{review.url}. The PR either was closed or review label was removed."
     helper.messageAOs message
