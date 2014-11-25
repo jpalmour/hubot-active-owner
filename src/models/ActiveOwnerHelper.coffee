@@ -43,10 +43,10 @@ class ActiveOwnerHelper
 
   userForHipchatMentionName: (name) ->
     result = null
-    lowerName = name.toLowerCase()
+    normalizedName = name.toLowerCase().replace('@','')
     for k of (@robot.brain.data.users or { })
       userName = @robot.brain.data.users[k]['mention_name']
-      if userName? and userName.toString().toLowerCase() is lowerName
+      if userName? and userName.toString().toLowerCase() is normalizedName
         result = @robot.brain.data.users[k]
     result
 

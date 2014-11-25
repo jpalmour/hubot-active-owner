@@ -1,7 +1,7 @@
 {
   "name": "hubot-active-owner",
   "description": "Let Hubot keep track of who is on AO duty for each team",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "author": "Joseph Palmour <jpalmour@gmail.com>",
   "contributors": [
     {
