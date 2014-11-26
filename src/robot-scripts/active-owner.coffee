@@ -42,7 +42,7 @@ module.exports = (robot) ->
       response = "Nothing needs review as far as I know."
       return msg.send response
     prDescription = (pr) ->
-      return "Added #{moment(pr.aoUserAssignedDt).fromNow()}: #{pr.url}"
+      return "Added #{moment(pr.reviewNeededDt).fromNow()}: #{pr.url}"
     prDescriptionList = (prDescription(pr) for prKey, pr of reviews)
     msg.send "PRs in need of review:\n" + prDescriptionList.join("\n")
 
