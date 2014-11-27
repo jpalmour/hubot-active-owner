@@ -19,7 +19,7 @@ module.exports = (robot) ->
 
   robot.brain.data.teams ||= {}
   robot.brain.data.reviews ||= {}
-  helper = new AOHelper(robot)
+  helper = new AOHelper robot
 
   robot.respond /(list|show) (active owners|AO's|AOs)/i, (msg) ->
     teams = robot.brain.data.teams
