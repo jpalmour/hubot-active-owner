@@ -7,7 +7,8 @@ class ActiveOwnerHelper
 
   assignTeam: (userId, teamName, msg) ->
     team = @getTeam(teamName)
-    return msg.send "Never heard of that team. You can add a team with 'Add <team name> to teams'." unless team
+    return msg.send "Never heard of that team. " +
+      "You can add a team with 'Add <team name> to teams'." unless team
     return msg.send "I have no idea who you're talking about." unless userId
     team.assignAo(userId)
     msg.send 'Got it.'
@@ -36,16 +37,17 @@ class ActiveOwnerHelper
   messageAO: (team, message) ->
     if team.aoUserId
       aoUser = @robot.brain.userForId(team.aoUserId)
-      # Hipchat adapter sets the current room to the user's reply_to property value
-      # To send a private message instead, don't transfer reply_to
+      # Hipchat adapter sets the current room to the user's reply_to property
+      # value. To send a private message instead, don't transfer reply_to
       user = _.clone(aoUser)
       delete user['reply_to']
-      @robot.logger.info "Messaging user #{team.aoUserId}: #{JSON.stringify aoUser}"
+      @robot.logger.debug "Messaging user #{team.aoUserId}: " +
+        "#{JSON.stringify aoUser}"
       @robot.reply(user, message)
 
   getIdForName: (name) ->
-    return @robot.brain.userForName(name)?.id || @userForHipchatMentionName(name)?.id
-    return id
+    return @robot.brain.userForName(name)?.id ||
+      @userForHipchatMentionName(name)?.id
 
   userForHipchatMentionName: (name) ->
     result = null
