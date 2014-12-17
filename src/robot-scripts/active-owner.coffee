@@ -41,10 +41,9 @@ module.exports = (robot) ->
         "#{aoName} has been active owner on #{team.name} " +
         "for #{moment(team.aoUserAssignedDt).fromNow(true)}"
       else
-        "* #{team.name} has no active owner! " +
-        "Use: 'Assign <user> as AO for <team>'."
+        "* #{team.name} has no active owner! "
     aoDescriptions = (aoDescription(teams[prop]) for prop of teams)
-    msg.send "AOs:\n" + aoDescriptions.join("\n")
+    msg.send "AOs:\n" + aoDescriptions.join("\n") + "\n\nUse: 'Assign <user> as AO for <team>' to assign an AO."
 
   robot.respond /(list|show) review list/i, (msg) ->
     reviews = robot.brain.data.reviews
