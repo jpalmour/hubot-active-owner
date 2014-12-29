@@ -124,7 +124,9 @@ describe 'Hubot with active-owner script', ->
 	AOs:
 	@Gary has been active owner on Team America for a few seconds
 	Charlie has been active owner on The Mighty Ducks for a few seconds
-	* Team Knight Rider has no active owner! Use: \'Assign <user> as AO for <team>\'.
+	* Team Knight Rider has no active owner! 
+	
+	Use: \'Assign <user> as AO for <team>\' to assign an AO.
         """
         expect(strings[0]).to.equal(expResp)
         done()
