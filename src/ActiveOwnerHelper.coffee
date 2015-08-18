@@ -45,9 +45,12 @@ class ActiveOwnerHelper
         "#{JSON.stringify aoUser}"
       @robot.reply(user, message)
 
+  getUserForName: (name) ->
+    return @robot.brain.userForName(name) ||
+      @userForHipchatMentionName(name)
+
   getIdForName: (name) ->
-    return @robot.brain.userForName(name)?.id ||
-      @userForHipchatMentionName(name)?.id
+    return getUserForName(name)?.id
 
   userForHipchatMentionName: (name) ->
     result = null

@@ -28,6 +28,11 @@ module.exports = (robot) ->
       robot.logger.debug "Emitted review-closed event for " +
       "#{req.body.pull_request.html_url}"
       robot.emit 'review-complete', review
+    if req.body.action == 'labeled' && 
+    req.body.label.name == process.env.HUBOT_ATTENTION_EVERYONE_LABEL
+      robot.logger.debug "Emitted attention-everyone event for " +
+      "#{req.body.pull_request.html_url}"
+      robot.emit 'attention-everyone', review
 
     #push needs to be the last choice
     if req.body.forced and (test == 'refs/heads/master' or test.match branchPattern)
