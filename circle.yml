@@ -1,5 +1,5 @@
 dependencies:
-	override:
-		npm install
+  override:
+    npm install
 test:
-	post: npm test
+  post: npm test
