@@ -1,5 +1,4 @@
 Team = require './Team'
-Review = require './Review'
 _ = require 'lodash'
 
 class ActiveOwnerHelper

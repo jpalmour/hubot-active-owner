@@ -2,13 +2,11 @@
 #   Emit review-needed and review-complete events based on
 #   GitHub pull_request WebHook Events
 
-AOHelper = require '../ActiveOwnerHelper'
 Review = require '../Review'
 Push = require '../Push'
 
 module.exports = (robot) ->
 
-  helper = new AOHelper robot
   branchPattern = ///^refs/heads/release-[0-9.]*$///
 
   robot.router.post '/hubot/gh', (req, res) ->
@@ -25,9 +23,10 @@ module.exports = (robot) ->
       robot.emit 'review-needed', review
 
     if req.body.pull_request and reviewNoLongerNeeded req.body
-      robot.logger.debug "Emitted review-closed event for " +
+      robot.logger.debug "Emitted potential-review-closed event for " +
       "#{req.body.pull_request.html_url}"
-      robot.emit 'review-complete', review
+      robot.emit 'potential-review-complete', review
+
     if req.body.action == 'labeled' && 
     req.body.label.name == process.env.HUBOT_ATTENTION_EVERYONE_LABEL
       robot.logger.debug "Emitted attention-everyone event for " +
@@ -43,7 +42,6 @@ module.exports = (robot) ->
   reviewNoLongerNeeded = (body) ->
     labelRemoved = body.action == 'unlabeled' &&
       body.label.name == process.env.HUBOT_REVIEW_NEEDED_LABEL
-    prClosed = body.action == 'closed' &&
-      helper.getReview "#{body.repository.full_name}/#{body.number}"
+    prClosed = body.action == 'closed'
     labelRemoved || prClosed
 
