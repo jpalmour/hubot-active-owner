@@ -49,7 +49,7 @@ class ActiveOwnerHelper
       @userForHipchatMentionName(name)
 
   getIdForName: (name) ->
-    return getUserForName(name)?.id
+    return @getUserForName(name)?.id
 
   userForHipchatMentionName: (name) ->
     result = null
